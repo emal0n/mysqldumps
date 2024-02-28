@@ -29,7 +29,8 @@ CREATE TABLE vacinas (
  vac_ani_id_fk       INT(11) ); 
 
 CREATE TABLE ordem_serv ( 
- osc_id              INT(11) PRIMARY KEY auto_increment ); 
+ osc_id              INT(11) PRIMARY KEY auto_increment, 
+ osc_total           INT(11)                           ); 
 
 CREATE TABLE itens_ordem_servc ( 
  iosc_id             INT(11) PRIMARY KEY auto_increment,  
@@ -106,9 +107,6 @@ values ('2', 'shampoo', '1');
 insert into vacinas (vac_id, vac_vacinas_aplic, vac_vaci_aplic_data)
 values ('1', 'contra raiva', '20240227');
 
-insert into ordem_serv
-values ('1');
-
 insert into itens_ordem_servc (iosc_id, iosc_servico, iosc_quantidade)
 values ('1', 'banho', '1');
 
@@ -123,6 +121,9 @@ values ('1', 'aldair', '97877566599');
 
 insert into recebimento (rec_id, rec_data, rec_valor)
 values ('1', '20240227', '400');
+
+insert into ordem_serv (osc_total)
+values ('400');
 
 -- 4 b)
 update produto_servc 
@@ -143,8 +144,8 @@ select sum(iosc_quantidade) as total
 from itens_ordem_servc;
 
 -- 4 f)
-select sum(rec_valor) as total
-from itens_ordem_servc;
+select sum(osc_total * 0.03) as comissao
+from ordem_serv;
 
 -- 4 g) 
 update vacinas
