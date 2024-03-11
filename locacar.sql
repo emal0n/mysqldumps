@@ -13,8 +13,8 @@ cli_email          VARCHAR(100),
 
 CREATE TABLE automovel (
 auto_id            INT PRIMARY KEY AUTO_INCREMENT,
+auto_marca         VARCHAR(10),
 auto_nome          VARCHAR(100),
-auto_tipo_veiculo  VARCHAR(100),
 auto_categoria     VARCHAR(100) );
 
 CREATE TABLE vendedor (
@@ -66,9 +66,9 @@ marca_nome         VARCHAR(100) );
 create table modelo (
 model_id           INT PRIMARY KEY AUTO_INCREMENT,
 model_nome         VARCHAR(100),
-model_ano          VARCHAR(100),
-model_placa        VARCHAR(100),
-model_cor          VARCHAR(100),
+model_ano          DATE,
+model_placa        VARCHAR(8),
+model_cor          VARCHAR(10),
 model_fk_automovel INT,
 model_fk_marca     INT,
 model_cambio       VARCHAR(100) );
@@ -93,3 +93,12 @@ ALTER TABLE aluguel_veiculo ADD FOREIGN KEY (aluv_fk_aluguel) REFERENCES aluguel
 ALTER TABLE aluguel_veiculo ADD FOREIGN KEY (aluv_fk_automovel) REFERENCES automovel (auto_id);
 ALTER TABLE recebimento ADD FOREIGN KEY (rec_fk_formpag) REFERENCES forma_de_pagamento (formpag_id);
 ALTER TABLE recebimento ADD FOREIGN KEY (rec_fk_vendas) REFERENCES vendas (venda_id);
+
+insert into automovel (auto_marca, auto_nome, auto_categoria)
+values 
+('HONDA', 'NSX', 'Esportivo'),
+('TOYOTA', 'AE86', 'Esportivo'),
+('FERRARI', 'F40', 'Esportivo / Luxo');
+
+SELECT * FROM automovel
+
