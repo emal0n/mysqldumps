@@ -1,4 +1,4 @@
--- banco feito para a orbita, baseada em uma pastelaria / by:ed
+-- orbita COPYRIGHT, baseada em uma pastelaria - by:ed
 drop database pastelaria_wip;
 create database pastelaria_wip;
 use pastelaria_wip;
@@ -8,6 +8,7 @@ CREATE TABLE Cliente (
  cliente_id                  INT PRIMARY KEY auto_increment,  
  cliente_nome_completo       VARCHAR(100),
  cliente_apelido             VARCHAR(10),
+ cliente_nascimento          DATE,
  cliente_telefone            DECIMAL(11),
  cliente_email               VARCHAR(100),
  cliente_cpf                 DECIMAL(12,0),
@@ -23,59 +24,75 @@ CREATE TABLE Cliente (
  funcionario_cpf             DECIMAL(12,0),  
                              UNIQUE (funcionario_cpf) ); 
 
-CREATE TABLE Cardapio_registro ( 
- cardapioreg_id                 INT PRIMARY KEY auto_increment,
- cardapioreg_funcionario        INT,
- cardapioreg_cliente            INT,
- cardapioreg_produto_tipo       VARCHAR(100),  
- cardapioreg_produto_nome       VARCHAR(100),
- cardapioreg_tamanho_cm         INT,
- cardapioreg_sabor              VARCHAR(100),
- cardapioreg_bebida             VARCHAR(100),
- cardapioreg_extras             VARCHAR(100),
- cardapioreg_data               DATE,
- FOREIGN KEY (cardapioreg_cliente) REFERENCES Cliente (cliente_id),
- FOREIGN KEY (cardapioreg_funcionario) REFERENCES Funcionarios (funcionario_id) ); 
-
-CREATE TABLE formas_pagamento ( 
+CREATE TABLE Formas_pagamento ( 
  fpagamento_id               INT PRIMARY KEY auto_increment,  
  fpagamento_nome             VARCHAR(11),                       
  fpagamento_cliente          INT,  
  FOREIGN KEY (fpagamento_cliente) REFERENCES Cliente (cliente_id) ); 
 
-CREATE TABLE Vendas ( 
- vendas_id                  INT PRIMARY KEY auto_increment,
- vendas_funcionario         INT,
- vendas_cliente             INT,
- vendas_produto_tipo        VARCHAR(100),  
- vendas_produto_nome        VARCHAR(100),
- vendas_extras              VARCHAR(100),
- vendas_data                DATE,
- vendas_pagamento_tipo      INT,
- FOREIGN KEY (vendas_cliente) REFERENCES Cliente (cliente_id),
- FOREIGN KEY (vendas_pagamento_tipo) REFERENCES fpagamento (fpagamento_id),
- FOREIGN KEY (vendas_funcionario) REFERENCES Funcionarios (funcionario_id) ); 
-
-CREATE TABLE recebimento ( 
+CREATE TABLE Recebimento ( 
  recebimento_id              INT PRIMARY KEY auto_increment,  
  recebimento_data            DATE,  
  recebimento_valor           DECIMAL(15,4),
  recebimento_cliente         INT,
- recebimento_formapagmento   INT, 
+ recebimento_formapagamento   INT, 
  FOREIGN KEY (recebimento_formapagamento) REFERENCES formas_pagamento (fpagamento_id) );
+
+CREATE TABLE Cardapio (
+cardapio_id                     INT PRIMARY KEY auto_increment,
+cardapio_produto                VARCHAR(100),
+cardapio_categoria              VARCHAR(100),
+cardapio_tipo                   VARCHAR(100),
+cardapio_sabor                  VARCHAR(100),
+cardapio_valor                  INT );
+
+CREATE TABLE Produtos_registro ( 
+ produtosreg_id                 INT PRIMARY KEY auto_increment,
+ produtosreg_funcionario        INT,
+ produtosreg_cliente            INT,
+ produtosreg_pastel_tipo        VARCHAR(100),  
+ produtosreg_tamanho_cm         INT,
+ produtosreg_sabor_id           INT,
+ produtosreg_quantidade_pastel  VARCHAR(100),
+ produtosreg_bebida_tipo        VARCHAR(100),
+ produtosreg_bebida_nome        VARCHAR(100),
+ produtosreg_quantidade_bebida  VARCHAR(100),
+ produtosreg_extras             VARCHAR(100),
+ produtosreg_data               DATE,
+ produtosreg_pagamento_tipo     INT,
+ produtosreg_cardapio_id        INT,
+ FOREIGN KEY (produtosreg_cliente) REFERENCES Cliente (cliente_id),
+ FOREIGN KEY (produtosreg_pagamento_tipo) REFERENCES formas_pagamento (fpagamento_id),
+ FOREIGN KEY (produtosreg_funcionario) REFERENCES Funcionarios (funcionario_id),
+ FOREIGN KEY (produtosreg_sabor_id) REFERENCES cardapio (cardapio_id) ); 
+ 
+ CREATE TABLE Produtos_vendas_registro ( 
+ vendas_id                  INT PRIMARY KEY auto_increment,
+ vendas_funcionario         INT,
+ vendas_cliente             INT,
+ vendas_data                DATE,
+ vendas_pagamento_tipo      INT,
+ FOREIGN KEY (vendas_cliente) REFERENCES Cliente (cliente_id),
+ FOREIGN KEY (vendas_pagamento_tipo) REFERENCES formas_pagamento (fpagamento_id),
+ FOREIGN KEY (vendas_funcionario) REFERENCES Funcionarios (funcionario_id) ); 
  --
  
  -- views
  CREATE VIEW view_vendas
  AS SELECT 
- vendas_produto_tipo  AS tipo,     
- vendas_produto_nome  AS nome,    
- vendas_tamanho_cm    AS pastel_cm,    
- vendas_sabor         AS sabor,    
- vendas_bebida        AS bebida,   
- vendas_extras        AS extras,   
- vendas_data          AS data_pedido   
- FROM Vendas;
+ vendas_cliente                AS cliente,
+ produtosreg_pastel_tipo       AS tipo_pastel,        
+ produtosreg_tamanho_cm        AS pastel_cm,    
+ produtosreg_sabor_id          AS sabor,
+ produtosreg_quantidade_pastel AS quantidade_pastel,
+ produtosreg_bebida_tipo       AS tipo_bebida,     
+ produtosreg_bebida_nome       AS nome_bebida,  
+ produtosreg_quantidade_bebida AS quantidade_bebida,
+ produtosreg_extras            AS extras,   
+ produtosreg_data              AS data_pedido,
+ vendas_data                   AS data_venda,
+ vendas_pagamento_tipo         AS tipo_pagamento
+ FROM Produtos_registro, Produtos_vendas_registro;
  
  CREATE VIEW view_recebimentos 
  AS SELECT 
@@ -83,18 +100,8 @@ CREATE TABLE recebimento (
  recebimento_data           AS data_recebimento, 
  recebimento_valor          AS valor,    
  recebimento_cliente        AS cliente,    
- recebimento_formapagmento  AS tipo_pagamento  
- FROM recebimento;
- 
- CREATE VIEW view_estoque 
- AS SELECT  
- produtos_nome           AS produtos,
- produtos_unidade        AS localidade_produtos,
- produtos_entrada_data   AS entrada_produtos,
- acessorios_nome         AS acessorios,
- acessorios_unidade      AS localidade_acessorios,
- acessorios_entrada_data AS entrada_acessorios
- FROM Produtos, Acessorios;
+ recebimento_formapagamento  AS tipo_pagamento  
+ FROM Recebimento;
  
  CREATE VIEW view_pagamentos 
  AS SELECT 
@@ -102,31 +109,26 @@ CREATE TABLE recebimento (
  fpagamento_nome         AS nome,
  recebimento_data        AS recebimento,
  recebimento_valor       AS valor
- FROM formas_pagamento, recebimento;
+ FROM Formas_pagamento, Recebimento;
  --
- 
- -- triggers
-CREATE TRIGGER trigger_acessorios_insert 
-AFTER INSERT ON Acessorios
-FOR EACH ROW
-INSERT INTO Acessorios (acessorios_nome, acessorios_unidade, acessorios_entrada_data)
-VALUES (NEW.acessorios_nome, NEW.acessorios_unidade, NEW.acessorios_entrada_data);
 
-CREATE TRIGGER trigger_acessorios_delete 
-BEFORE DELETE ON Acessorios
+CREATE TRIGGER trigger_cancelar_pedidos 
+BEFORE DELETE ON Produtos_registro
 FOR EACH ROW
-INSERT INTO Acessorios (acessorios_nome, acessorios_unidade, acessorios_entrada_data)
-VALUES (OLD.acessorios_nome, OLD.acessorios_unidade, OLD.acessorios_entrada_data);
-
-CREATE TRIGGER trigger_produtos_insert 
-AFTER INSERT ON Produtos
-FOR EACH ROW
-INSERT INTO Produtos (produtos_nome, produtos_unidade, produtos_entrada_data)
-VALUES (NEW.produtos_nome, NEW.produtos_unidade, NEW.produtos_entrada_data);
-
-CREATE TRIGGER trigger_produtos_delete 
-BEFORE DELETE ON Produtos
-FOR EACH ROW
-INSERT INTO Produtos (produtos_nome, produtos_unidade, produtos_entrada_data)
-VALUES (OLD.produtos_nome, OLD.produtos_unidade, OLD.produtos_entrada_data);
+INSERT INTO Produtos_registro ( 
+produtosreg_pastel_tipo,
+produtosreg_tamanho_cm,
+produtosreg_sabor_id,
+produtosreg_bebida_tipo,
+produtosreg_bebida_nome,
+produtosreg_extras,
+produtosreg_data )
+VALUES (
+OLD.produtosreg_pastel_tipo, 
+OLD.produtosreg_tamanho_cm, 
+OLD.produtosreg_sabor_id,
+OLD.produtosreg_bebida_tipo,
+OLD.produtosreg_bebida_nome,
+OLD.produtosreg_extras,
+OLD.produtosreg_data );
 --
