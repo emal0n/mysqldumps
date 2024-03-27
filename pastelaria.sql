@@ -1,7 +1,6 @@
 -- orbita COPYRIGHT, baseada em uma pastelaria - by:ed
-drop database pastelaria_wip;
-create database pastelaria_wip;
-use pastelaria_wip;
+create database pastelaria;
+use pastelaria;
 
 -- tabelas
 CREATE TABLE Cliente ( 
@@ -33,6 +32,7 @@ CREATE TABLE Formas_pagamento (
  recebimento_data              DATE,  
  recebimento_valor             DECIMAL(15,4),
  recebimento_cliente_id        INT,
+ recebimento_pedido_id         INT,
  recebimento_formapagamento    INT,
  recebimento_formapagamento_fk INT, 
  recebimento_cliente_fk        INT,
@@ -44,15 +44,17 @@ cardapio_produto               VARCHAR(100),
 cardapio_categoria             VARCHAR(100),
 cardapio_tipo                  VARCHAR(100),
 cardapio_sabor                 VARCHAR(100),
-cardapio_tamanho_cm            VARCHAR(100),
+cardapio_tamanho               VARCHAR(100),
 cardapio_valor                 INT );
 
 CREATE TABLE Produtos_registro ( 
  produtosreg_id                INT PRIMARY KEY auto_increment,
  produtosreg_funcionario_id    INT,
  produtosreg_cliente_id        INT,
- produtosreg_pastel_id         VARCHAR(100),  
- produtosreg_bebida_id         VARCHAR(100),
+ produtosreg_pastel_id         INT,  
+ produtosreg_pastel_quantidade INT, 
+ produtosreg_bebida_id         INT,
+ produtosreg_bebida_quantidade INT, 
  produtosreg_data              DATE,
  produtosreg_cardapio_fk       INT,
  produtosreg_cliente_fk        INT,
@@ -77,60 +79,3 @@ CREATE TABLE Produtos_registro (
  FOREIGN KEY (vendas_produtosreg_fk) REFERENCES Produtos_registro (produtosreg_id), 
  FOREIGN KEY (vendas_funcionario_fk) REFERENCES Funcionarios (funcionario_id) ); 
  --
- 
- -- views
- /* CREATE VIEW view_vendas
- AS SELECT 
- vendas_cliente                AS cliente,
- produtosreg_pastel_tipo       AS tipo_pastel,        
- produtosreg_tamanho_cm        AS pastel_cm,    
- produtosreg_sabor_id          AS sabor,
- produtosreg_quantidade_pastel AS quantidade_pastel,
- produtosreg_bebida_tipo       AS tipo_bebida,     
- produtosreg_bebida_nome       AS nome_bebida,  
- produtosreg_quantidade_bebida AS quantidade_bebida,
- produtosreg_extras            AS extras,   
- produtosreg_data              AS data_pedido,
- vendas_data                   AS data_venda,
- vendas_pagamento_tipo         AS tipo_pagamento
- FROM Produtos_registro, Produtos_vendas_registro;
- 
- CREATE VIEW view_recebimentos 
- AS SELECT 
- recebimento_id             AS id,
- recebimento_data           AS data_recebimento, 
- recebimento_valor          AS valor,    
- recebimento_cliente        AS cliente,    
- recebimento_formapagamento  AS tipo_pagamento  
- FROM Recebimento;
- 
- CREATE VIEW view_pagamentos 
- AS SELECT 
- fpagamento_id           AS id, 
- fpagamento_nome         AS nome,
- recebimento_data        AS recebimento,
- recebimento_valor       AS valor
- FROM Formas_pagamento, Recebimento;
- --
-
-CREATE TRIGGER trigger_cancelar_pedidos 
-BEFORE DELETE ON Produtos_registro
-FOR EACH ROW
-INSERT INTO Produtos_registro ( 
-produtosreg_pastel_tipo,
-produtosreg_tamanho_cm,
-produtosreg_sabor_id,
-produtosreg_bebida_tipo,
-produtosreg_bebida_nome,
-produtosreg_extras,
-produtosreg_data )
-VALUES (
-OLD.produtosreg_pastel_tipo, 
-OLD.produtosreg_tamanho_cm, 
-OLD.produtosreg_sabor_id,
-OLD.produtosreg_bebida_tipo,
-OLD.produtosreg_bebida_nome,
-OLD.produtosreg_extras,
-OLD.produtosreg_data );
--- */
-
