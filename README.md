@@ -1,1 +1,5 @@
-# mysqL_projects
+```bash
+My personal sql projects.
+
+© emalon91
+```
